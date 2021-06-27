@@ -28,7 +28,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.MethodRemapper;
 import org.objectweb.asm.commons.Remapper;
-import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.*;
 import org.spongepowered.asm.util.Bytecode;
 
 import java.util.HashMap;
@@ -57,6 +57,22 @@ public class InternalsRemapperTransformer extends Remapper implements Consumer<C
     
     @Override
     public void accept(ClassNode classNode) {
+        if (classNode.name.endsWith("NonNullLazyValue")) {
+            for (MethodNode method : classNode.methods) {
+                if (method.name.equals("get")) {
+                    method.instructions.clear();
+                    method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                    method.instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "net/minecraft/util/LazyLoadedValue", "get", "()Ljava/lang/Object;"));
+                    method.instructions.add(new InsnNode(Opcodes.ARETURN));
+                }
+            }
+        }
+        if (classNode.name.endsWith("/ItemRenderer")) {
+            for (FieldNode field : classNode.fields) {
+                field.access = field.access & (~Opcodes.ACC_PRIVATE);
+                field.access = field.access | Opcodes.ACC_PUBLIC;
+            }
+        }
         ClassNode newClassNode = new ClassNode(Opcodes.ASM9);
         ClassRemapper remapper = new ClassRemapper(Opcodes.ASM9, newClassNode, this) {
             @Override

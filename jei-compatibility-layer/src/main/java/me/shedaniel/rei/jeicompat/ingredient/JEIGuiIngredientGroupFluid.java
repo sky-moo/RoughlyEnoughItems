@@ -23,7 +23,8 @@
 
 package me.shedaniel.rei.jeicompat.ingredient;
 
-import dev.architectury.utils.Value;
+import me.shedaniel.architectury.utils.Value;
+import me.shedaniel.rei.api.client.gui.widgets.Slot;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IGuiFluidStackGroup;
 import mezz.jei.api.ingredients.IIngredientType;
@@ -37,8 +38,9 @@ public class JEIGuiIngredientGroupFluid extends JEIGuiIngredientGroup<FluidStack
     
     @Override
     public void init(int slotIndex, boolean input, int xPosition, int yPosition, int width, int height, int capacityMb, boolean showCapacity, @Nullable IDrawable overlay) {
-        init(slotIndex, input, xPosition - 1, yPosition - 1);
         SlotWrapper slot = getSlot(slotIndex);
+        slot.slot.setNoticeMark(input ? Slot.INPUT : Slot.OUTPUT);
+        slot.slot.getBounds().setLocation(xPosition - 1, yPosition - 1);
         slot.slot.getBounds().setSize(width + 2, height + 2);
         slot.fluidCapacity = capacityMb;
         slot.overlay = overlay;

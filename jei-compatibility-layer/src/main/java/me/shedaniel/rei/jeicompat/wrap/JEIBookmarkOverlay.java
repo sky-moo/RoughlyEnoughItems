@@ -23,7 +23,7 @@
 
 package me.shedaniel.rei.jeicompat.wrap;
 
-import me.shedaniel.rei.api.client.REIHelper;
+import me.shedaniel.rei.api.client.REIRuntime;
 import me.shedaniel.rei.api.client.overlay.OverlayListWidget;
 import me.shedaniel.rei.api.client.overlay.ScreenOverlay;
 import me.shedaniel.rei.api.common.entry.EntryStack;
@@ -40,11 +40,11 @@ public enum JEIBookmarkOverlay implements IBookmarkOverlay {
     @Override
     @Nullable
     public Object getIngredientUnderMouse() {
-        if (!REIHelper.getInstance().isOverlayVisible()) return null;
-        ScreenOverlay overlay = REIHelper.getInstance().getOverlay().get();
+        if (!REIRuntime.getInstance().isOverlayVisible()) return null;
+        ScreenOverlay overlay = REIRuntime.getInstance().getOverlay().get();
         Optional<OverlayListWidget> favoritesList = overlay.getFavoritesList();
         if (!favoritesList.isPresent()) return null;
-        EntryStack<?> stack = favoritesList.get().getFocusedStacK();
+        EntryStack<?> stack = favoritesList.get().getFocusedStack();
         if (stack.isEmpty()) return null;
         return unwrap(stack);
     }

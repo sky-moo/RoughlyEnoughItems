@@ -25,7 +25,7 @@ package me.shedaniel.rei.jeicompat.wrap;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import dev.architectury.utils.Value;
+import me.shedaniel.architectury.utils.Value;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.gui.screen.DisplayScreen;
 import me.shedaniel.rei.api.client.gui.widgets.Widget;
@@ -159,13 +159,13 @@ public class JEIRecipeLayout<T> implements IRecipeLayout {
                     for (EntryStack<?> entry : wrapper.slot.getEntries()) {
                         if (entry.getType() == VanillaEntryTypes.FLUID) {
                             ClientEntryStacks.setFluidRenderRatio(entry.cast(),
-                                    entry.<dev.architectury.fluid.FluidStack>cast().getValue().getAmount().floatValue() / wrapper.fluidCapacity);
+                                    entry.<me.shedaniel.architectury.fluid.FluidStack>cast().getValue().getAmount().floatValue() / wrapper.fluidCapacity);
                         }
                     }
                 }
                 
                 if (wrapper.overlay != null) {
-                    widgets.add(Widgets.wrapRenderer(wrapper.slot.getInnerBounds().clone(), wrapDrawable(wrapper.overlay)));
+                    widgets.add(Widgets.withTranslate(Widgets.wrapRenderer(wrapper.slot.getInnerBounds().clone(), wrapDrawable(wrapper.overlay)), 0, 251, 0));
                 }
                 
                 List<ITooltipCallback<Object>> tooltipCallbacks = (List<ITooltipCallback<Object>>) (List) group.tooltipCallbacks;

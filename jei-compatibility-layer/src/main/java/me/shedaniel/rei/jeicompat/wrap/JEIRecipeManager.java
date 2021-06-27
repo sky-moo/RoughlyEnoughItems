@@ -23,6 +23,7 @@
 
 package me.shedaniel.rei.jeicompat.wrap;
 
+import me.shedaniel.architectury.event.EventResult;
 import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
@@ -143,15 +144,15 @@ public enum JEIRecipeManager implements IRecipeManager {
     
     public class Predicate implements DisplayVisibilityPredicate {
         @Override
-        public InteractionResult handleDisplay(DisplayCategory<?> category, Display display) {
+        public EventResult handleDisplay(DisplayCategory<?> category, Display display) {
             if (hiddenCategories.contains(category.getCategoryIdentifier())) {
-                return InteractionResult.FAIL;
+                return EventResult.interruptFalse();
             }
             Set<Object> hidden = hiddenRecipes.get(category.getCategoryIdentifier());
             if (hidden != null && hidden.contains(wrapRecipe(category, display))) {
-                return InteractionResult.FAIL;
+                return EventResult.interruptFalse();
             }
-            return InteractionResult.PASS;
+            return EventResult.pass();
         }
     }
 }

@@ -23,7 +23,7 @@
 
 package me.shedaniel.rei.jeicompat.ingredient;
 
-import dev.architectury.utils.Value;
+import me.shedaniel.architectury.utils.Value;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IGuiItemStackGroup;
 import mezz.jei.api.ingredients.IIngredientType;
@@ -32,5 +32,10 @@ import net.minecraft.world.item.ItemStack;
 public class JEIGuiIngredientGroupItem extends JEIGuiIngredientGroup<ItemStack> implements IGuiItemStackGroup {
     public JEIGuiIngredientGroupItem(IIngredientType<ItemStack> type, Value<IDrawable> background) {
         super(type, background);
+    }
+    
+    @Override
+    public void init(int slotIndex, boolean input, int xPosition, int yPosition) {
+        super.init(slotIndex, input, xPosition + 1, yPosition + 1);
     }
 }

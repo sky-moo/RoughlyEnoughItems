@@ -27,7 +27,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import dev.architectury.utils.Value;
+import me.shedaniel.architectury.utils.Value;
 import me.shedaniel.math.Point;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.rei.api.client.gui.widgets.Slot;
@@ -128,13 +128,14 @@ public class JEIGuiIngredientGroup<T> implements IGuiIngredientGroup<T> {
     public void init(int slotIndex, boolean input, int xPosition, int yPosition) {
         SlotWrapper slot = getSlot(slotIndex);
         slot.slot.setNoticeMark(input ? Slot.INPUT : Slot.OUTPUT);
-        slot.slot.getBounds().setLocation(xPosition, yPosition);
+        slot.slot.getBounds().setLocation(xPosition - 1, yPosition - 1);
     }
     
     @Override
     public void init(int slotIndex, boolean input, @NotNull IIngredientRenderer<T> ingredientRenderer, int xPosition, int yPosition, int width, int height, int xPadding, int yPadding) {
-        init(slotIndex, input, xPosition - 1, yPosition - 1);
         SlotWrapper slot = getSlot(slotIndex);
+        slot.slot.setNoticeMark(input ? Slot.INPUT : Slot.OUTPUT);
+        slot.slot.getBounds().setLocation(xPosition - 1, yPosition - 1);
         slot.slot.getBounds().setSize(width + 2, height + 2);
         slot.renderer = ingredientRenderer;
     }
