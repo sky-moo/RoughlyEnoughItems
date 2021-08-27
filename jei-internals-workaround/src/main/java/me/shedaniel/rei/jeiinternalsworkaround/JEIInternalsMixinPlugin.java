@@ -29,11 +29,9 @@ import cpw.mods.modlauncher.serviceapi.ILaunchPluginService;
 import me.shedaniel.rei.jeiinternalsworkaround.transformer.InternalsRemapperTransformer;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
-import org.spongepowered.asm.mixin.extensibility.IMixinConfig;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Consumer;
@@ -75,74 +73,6 @@ public class JEIInternalsMixinPlugin implements IMixinConfigPlugin {
                 return ComputeFlags.SIMPLE_REWRITE;
             }
         });
-       /* for (ILaunchPluginService service : plugins.values()) {
-            System.out.println(service.getClass().getSimpleName());
-            if (Objects.equals(service.getClass().getSimpleName(), "MixinLaunchPlugin")) {
-                List<IClassProcessor> processors = get(service, "processors");
-                processors.add(new IClassProcessor() {
-                    @Override
-                    public EnumSet<ILaunchPluginService.Phase> handlesClass(Type classType, boolean isEmpty, String reason) {
-                        return AFTER;
-                    }
-                    
-                    @Override
-                    public boolean processClass(ILaunchPluginService.Phase phase, ClassNode classNode, Type classType, String reason) {
-                        if (reason.equals("mixin")) return false;
-                        System.out.println(classNode.name);
-                        for (Consumer<ClassNode> transformer : TRANSFORMERS) {
-                            transformer.accept(classNode);
-                        }
-                        return true;
-                    }
-                });
-            }
-        }*/
-       /* IMixinTransformer transformer = (IMixinTransformer) MixinEnvironment.getCurrentEnvironment().getActiveTransformer();
-        ((Extensions) transformer.getExtensions()).add(new IExtension() {
-            @Override
-            public boolean checkActive(MixinEnvironment environment) {
-                return true;
-            }
-            
-            @Override
-            public void preApply(ITargetClassContext context) {
-                
-            }
-            
-            @Override
-            public void postApply(ITargetClassContext context) {
-                System.out.println(context.getClassNode().name);
-                for (Consumer<ClassNode> transformer : TRANSFORMERS) {
-                    transformer.accept(context.getClassNode());
-                }
-            }
-            
-            @Override
-            public void export(MixinEnvironment env, String name, boolean force, ClassNode classNode) {
-                
-            }
-        });
-        MixinProcessor processor = get(transformer, "processor");
-        List<IMixinConfig> configs = get(processor, "configs");
-        configs.add(createApplyAnyMixinConfig());*/
-    }
-    
-    private static IMixinConfig createApplyAnyMixinConfig() {
-        try {
-            Constructor<?> constructor = Class.forName("org.spongepowered.asm.mixin.transformer.MixinConfig").getDeclaredConstructor();
-            constructor.setAccessible(true);
-            IMixinConfig config = (IMixinConfig) constructor.newInstance();
-            set(config, "mixinMapping", new HashMap<String, List<?>>() {
-                @Override
-                public boolean containsKey(Object key) {
-                    return key instanceof String && !((String) key).toLowerCase().contains("mixin");
-                }
-            });
-            set(config, "mixinPackage", "djaikodhjiowadhiuajdhiuwajdhwaiuy8dbhwa");
-            return config;
-        } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
-        }
     }
     
     private static <T> T get(Object obj, String field) {
@@ -150,16 +80,6 @@ public class JEIInternalsMixinPlugin implements IMixinConfigPlugin {
             Field declaredField = obj.getClass().getDeclaredField(field);
             declaredField.setAccessible(true);
             return (T) declaredField.get(obj);
-        } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
-        }
-    }
-    
-    private static void set(Object obj, String field, Object value) {
-        try {
-            Field declaredField = obj.getClass().getDeclaredField(field);
-            declaredField.setAccessible(true);
-            declaredField.set(obj, value);
         } catch (Throwable throwable) {
             throw new RuntimeException(throwable);
         }

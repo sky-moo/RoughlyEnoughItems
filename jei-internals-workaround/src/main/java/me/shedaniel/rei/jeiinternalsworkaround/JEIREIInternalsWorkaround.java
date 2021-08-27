@@ -21,42 +21,10 @@
  * SOFTWARE.
  */
 
-package me.shedaniel.rei.api.common.registry;
+package me.shedaniel.rei.jeiinternalsworkaround;
 
-import me.shedaniel.rei.api.common.plugins.REIPlugin;
+import net.minecraftforge.fml.common.Mod;
 
-import java.util.List;
-
-public interface ParentReloadable<P extends REIPlugin<?>> extends Reloadable<P> {
-    List<Reloadable<P>> getReloadables();
-    
-    void registerReloadable(Reloadable<? extends P> reloadable);
-    
-    @Override
-    default void startReload() {
-        for (ReloadStage stage : ReloadStage.values()) {
-            startReload(stage);
-        }
-    }
-    
-    @Override
-    default void endReload() {
-        for (ReloadStage stage : ReloadStage.values()) {
-            endReload(stage);
-        }
-    }
-    
-    @Override
-    default void startReload(ReloadStage stage) {
-        for (Reloadable<P> reloadable : getReloadables()) {
-            reloadable.startReload(stage);
-        }
-    }
-    
-    @Override
-    default void endReload(ReloadStage stage) {
-        for (Reloadable<P> reloadable : getReloadables()) {
-            reloadable.endReload(stage);
-        }
-    }
+@Mod("rei-internals-workaround")
+public class JEIREIInternalsWorkaround {
 }
