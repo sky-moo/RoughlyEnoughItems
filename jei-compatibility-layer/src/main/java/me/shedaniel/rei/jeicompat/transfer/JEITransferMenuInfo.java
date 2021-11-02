@@ -33,12 +33,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import org.jetbrains.annotations.NotNull;
 
-public class JEITransferMenuInfo<T extends AbstractContainerMenu, R> implements SimplePlayerInventoryMenuInfo<T, Display> {
+public class JEITransferMenuInfo<T extends AbstractContainerMenu> implements SimplePlayerInventoryMenuInfo<T, Display> {
     public static final String KEY = "REI-JEI-Transfer-Data";
     @NotNull
-    protected JEIRecipeTransferData<T, R> data;
+    protected JEIRecipeTransferData<T> data;
     
-    public JEITransferMenuInfo(@NotNull JEIRecipeTransferData<T, R> data) {
+    public JEITransferMenuInfo(@NotNull JEIRecipeTransferData<T> data) {
         this.data = data;
     }
     

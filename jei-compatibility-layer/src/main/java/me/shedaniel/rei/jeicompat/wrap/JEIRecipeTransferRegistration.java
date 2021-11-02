@@ -34,10 +34,14 @@ import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
 import me.shedaniel.rei.api.client.registry.transfer.TransferHandler;
 import me.shedaniel.rei.api.client.registry.transfer.TransferHandlerRegistry;
+import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.entry.type.EntryType;
+import me.shedaniel.rei.api.common.transfer.info.MenuInfo;
+import me.shedaniel.rei.api.common.transfer.info.MenuInfoProvider;
 import me.shedaniel.rei.api.common.transfer.info.MenuInfoRegistry;
+import me.shedaniel.rei.api.common.transfer.info.MenuSerializationProviderContext;
 import me.shedaniel.rei.api.common.util.CollectionUtils;
 import me.shedaniel.rei.jeicompat.JEIPluginDetector;
 import me.shedaniel.rei.jeicompat.transfer.JEIRecipeTransferData;
@@ -52,6 +56,7 @@ import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
 import mezz.jei.api.recipe.transfer.IRecipeTransferInfo;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import org.jetbrains.annotations.NotNull;
@@ -124,7 +129,7 @@ public class JEIRecipeTransferRegistration implements IRecipeTransferRegistratio
                     new MenuInfoProvider<C, Display>() {
                         @Override
                         public Optional<MenuInfo<C, Display>> provideClient(Display display, C menu) {
-                            return Optional.of(new JEITransferMenuInfo<>(new JEIRecipeTransferData<>(info, menu, (R) wrapRecipe(display))));
+                            return Optional.of(new JEITransferMenuInfo<>(new JEIRecipeTransferData<>(info, menu)));
                         }
                         
                         @Override
@@ -141,7 +146,7 @@ public class JEIRecipeTransferRegistration implements IRecipeTransferRegistratio
     }
     
     @Override
-    public <C extends AbstractContainerMenu, R> void addRecipeTransferHandler(IRecipeTransferHandler<C, R> recipeTransferHandler, ResourceLocation recipeCategoryUid) {
+    public void addRecipeTransferHandler(IRecipeTransferHandler<?> recipeTransferHandler, ResourceLocation recipeCategoryUid) {
         TransferHandlerRegistry.getInstance().register(context -> {
             if (recipeTransferHandler.getContainerClass().isInstance(context.getMenu())) {
                 Display display = context.getDisplay();

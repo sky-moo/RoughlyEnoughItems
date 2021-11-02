@@ -54,7 +54,7 @@ public class JEIExtraPlugin implements REIServerPlugin {
                 
                 @Override
                 public Optional<MenuInfo<AbstractContainerMenu, Display>> provide(CategoryIdentifier<Display> display, AbstractContainerMenu menu, MenuSerializationProviderContext<AbstractContainerMenu, ?, Display> context, CompoundTag networkTag) {
-                    JEIRecipeTransferData<AbstractContainerMenu, Display> data = JEIRecipeTransferData.read(context.getMenu(), networkTag.getCompound(JEITransferMenuInfo.KEY));
+                    JEIRecipeTransferData<AbstractContainerMenu> data = JEIRecipeTransferData.read(context.getMenu(), networkTag.getCompound(JEITransferMenuInfo.KEY));
                     return Optional.of(new JEITransferMenuInfo<>(data));
                 }
                 
