@@ -26,6 +26,7 @@ package me.shedaniel.rei.jeicompat.wrap;
 import com.google.common.collect.ImmutableList;
 import me.shedaniel.rei.api.client.REIRuntime;
 import me.shedaniel.rei.api.client.config.ConfigObject;
+import me.shedaniel.rei.api.client.config.entry.EntryStackProvider;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import mezz.jei.api.runtime.IIngredientFilter;
 import org.jetbrains.annotations.NotNull;
@@ -51,11 +52,14 @@ public enum JEIIngredientFilter implements IIngredientFilter {
     @Override
     @NotNull
     public ImmutableList<Object> getFilteredIngredients() {
-        List<EntryStack<?>> filteredStacks = ConfigObject.getInstance().getFilteredStacks();
+        List<EntryStackProvider<?>> filteredStacks = ConfigObject.getInstance().getFilteredStackProviders();
         Object[] filtered = new Object[filteredStacks.size()];
         int i = 0;
-        for (EntryStack<?> stack : filteredStacks) {
-            filtered[i++] = unwrap(stack);
+        for (EntryStackProvider<?> provider : filteredStacks) {
+            EntryStack<?> stack = provider.provide();
+            if (!stack.isEmpty()) {
+                filtered[i++] = unwrap(stack.cast());
+            }
         }
         return ImmutableList.copyOf(filtered);
     }
