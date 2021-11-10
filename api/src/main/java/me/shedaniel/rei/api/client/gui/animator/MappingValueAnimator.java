@@ -21,32 +21,42 @@
  * SOFTWARE.
  */
 
-package me.shedaniel.rei.jeicompat.wrap;
+package me.shedaniel.rei.api.client.gui.animator;
 
-import lombok.experimental.ExtensionMethod;
-import me.shedaniel.rei.api.client.REIRuntime;
-import me.shedaniel.rei.api.client.overlay.OverlayListWidget;
-import me.shedaniel.rei.api.client.overlay.ScreenOverlay;
-import me.shedaniel.rei.api.common.entry.EntryStack;
-import me.shedaniel.rei.jeicompat.JEIPluginDetector;
-import mezz.jei.api.runtime.IBookmarkOverlay;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Optional;
+import java.util.function.Function;
 
-@ExtensionMethod(JEIPluginDetector.class)
-public enum JEIBookmarkOverlay implements IBookmarkOverlay {
-    INSTANCE;
+@ApiStatus.Internal
+final class MappingValueAnimator<T, R> implements ValueAnimator<R> {
+    private final ValueAnimator<T> parent;
+    private final Function<T, R> converter;
+    private final Function<R, T> backwardsConverter;
+    
+    MappingValueAnimator(ValueAnimator<T> parent, Function<T, R> converter, Function<R, T> backwardsConverter) {
+        this.parent = parent;
+        this.converter = converter;
+        this.backwardsConverter = backwardsConverter;
+    }
     
     @Override
-    @Nullable
-    public Object getIngredientUnderMouse() {
-        if (!REIRuntime.getInstance().isOverlayVisible()) return null;
-        ScreenOverlay overlay = REIRuntime.getInstance().getOverlay().get();
-        Optional<OverlayListWidget> favoritesList = overlay.getFavoritesList();
-        if (!favoritesList.isPresent()) return null;
-        EntryStack<?> stack = favoritesList.get().getFocusedStack();
-        if (stack.isEmpty()) return null;
-        return stack.jeiValue();
+    public ValueAnimator<R> setTo(R value, long duration) {
+        parent.setTo(backwardsConverter.apply(value), duration);
+        return this;
+    }
+    
+    @Override
+    public R target() {
+        return converter.apply(parent.target());
+    }
+    
+    @Override
+    public R value() {
+        return converter.apply(parent.value());
+    }
+    
+    @Override
+    public void update(double delta) {
+        parent.update(delta);
     }
 }

@@ -23,14 +23,13 @@
 
 package me.shedaniel.rei.jeicompat.wrap;
 
-import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
-import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
+import lombok.experimental.ExtensionMethod;
 import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
-import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.api.common.entry.EntryIngredient;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.api.common.util.ImmutableTextComponent;
+import me.shedaniel.rei.jeicompat.JEIPluginDetector;
 import me.shedaniel.rei.plugin.client.BuiltinClientPlugin;
 import mezz.jei.api.helpers.IJeiHelpers;
 import mezz.jei.api.ingredients.IIngredientType;
@@ -47,9 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import static me.shedaniel.rei.jeicompat.JEIPluginDetector.wrap;
-import static me.shedaniel.rei.jeicompat.JEIPluginDetector.wrapList;
-
+@ExtensionMethod(JEIPluginDetector.class)
 public class JEIRecipeRegistration implements IRecipeRegistration {
     private final List<Runnable> post;
     
@@ -92,7 +89,7 @@ public class JEIRecipeRegistration implements IRecipeRegistration {
     
     @Override
     public <T> void addIngredientInfo(@NotNull T ingredient, @NotNull IIngredientType<T> ingredientType, @NotNull String @NotNull ... descriptionKeys) {
-        EntryStack<T> stack = wrap(ingredientType, ingredient);
+        EntryStack<T> stack = ingredient.unwrapStack(ingredientType);
         BuiltinClientPlugin.getInstance().registerInformation(stack, stack.asFormattedText(), components -> {
             for (String key : descriptionKeys) {
                 components.add(new TranslatableComponent(key));
@@ -103,7 +100,7 @@ public class JEIRecipeRegistration implements IRecipeRegistration {
     
     @Override
     public <T> void addIngredientInfo(@NotNull T ingredient, @NotNull IIngredientType<T> ingredientType, @NotNull Component @NotNull ... descriptionComponents) {
-        EntryStack<T> stack = wrap(ingredientType, ingredient);
+        EntryStack<T> stack = ingredient.unwrapStack(ingredientType);
         BuiltinClientPlugin.getInstance().registerInformation(stack, stack.asFormattedText(), components -> {
             Collections.addAll(components, descriptionComponents);
             return components;
@@ -112,7 +109,7 @@ public class JEIRecipeRegistration implements IRecipeRegistration {
     
     @Override
     public <T> void addIngredientInfo(@NotNull List<T> ingredients, @NotNull IIngredientType<T> ingredientType, @NotNull String @NotNull ... descriptionKeys) {
-        EntryIngredient ingredient = wrapList(ingredientType, ingredients);
+        EntryIngredient ingredient = ingredientType.unwrapList(ingredients);
         BuiltinClientPlugin.getInstance().registerInformation(ingredient, ImmutableTextComponent.EMPTY, components -> {
             for (String key : descriptionKeys) {
                 components.add(new TranslatableComponent(key));
@@ -123,7 +120,7 @@ public class JEIRecipeRegistration implements IRecipeRegistration {
     
     @Override
     public <T> void addIngredientInfo(@NotNull List<T> ingredients, @NotNull IIngredientType<T> ingredientType, @NotNull Component @NotNull ... descriptionComponents) {
-        EntryIngredient ingredient = wrapList(ingredientType, ingredients);
+        EntryIngredient ingredient = ingredientType.unwrapList(ingredients);
         BuiltinClientPlugin.getInstance().registerInformation(ingredient, ImmutableTextComponent.EMPTY, components -> {
             Collections.addAll(components, descriptionComponents);
             return components;

@@ -24,6 +24,7 @@
 package me.shedaniel.rei.jeicompat.wrap;
 
 import com.google.common.collect.ImmutableList;
+import lombok.experimental.ExtensionMethod;
 import me.shedaniel.rei.api.client.REIRuntime;
 import me.shedaniel.rei.api.client.overlay.ScreenOverlay;
 import me.shedaniel.rei.api.common.entry.EntryStack;
@@ -33,8 +34,7 @@ import mezz.jei.api.runtime.IIngredientListOverlay;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static me.shedaniel.rei.jeicompat.JEIPluginDetector.unwrap;
-
+@ExtensionMethod(JEIPluginDetector.class)
 public enum JEIIngredientListOverlay implements IIngredientListOverlay {
     INSTANCE;
     
@@ -45,7 +45,7 @@ public enum JEIIngredientListOverlay implements IIngredientListOverlay {
         ScreenOverlay overlay = REIRuntime.getInstance().getOverlay().get();
         EntryStack<?> stack = overlay.getEntryList().getFocusedStack();
         if (stack.isEmpty()) return null;
-        return unwrap(stack);
+        return stack.jeiValue();
     }
     
     @Override
@@ -71,7 +71,7 @@ public enum JEIIngredientListOverlay implements IIngredientListOverlay {
     public ImmutableList<Object> getVisibleIngredients() {
         if (REIRuntime.getInstance().isOverlayVisible()) {
             ScreenOverlay overlay = REIRuntime.getInstance().getOverlay().get();
-            return overlay.getEntryList().getEntries().map(JEIPluginDetector::unwrap)
+            return overlay.getEntryList().getEntries().map(JEIPluginDetector::jeiValue)
                     .collect(ImmutableList.toImmutableList());
         }
         return null;

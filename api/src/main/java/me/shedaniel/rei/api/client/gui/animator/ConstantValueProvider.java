@@ -21,32 +21,33 @@
  * SOFTWARE.
  */
 
-package me.shedaniel.rei.jeicompat.wrap;
+package me.shedaniel.rei.api.client.gui.animator;
 
-import lombok.experimental.ExtensionMethod;
-import me.shedaniel.rei.api.client.REIRuntime;
-import me.shedaniel.rei.api.client.overlay.OverlayListWidget;
-import me.shedaniel.rei.api.client.overlay.ScreenOverlay;
-import me.shedaniel.rei.api.common.entry.EntryStack;
-import me.shedaniel.rei.jeicompat.JEIPluginDetector;
-import mezz.jei.api.runtime.IBookmarkOverlay;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Optional;
-
-@ExtensionMethod(JEIPluginDetector.class)
-public enum JEIBookmarkOverlay implements IBookmarkOverlay {
-    INSTANCE;
+@ApiStatus.Internal
+final class ConstantValueProvider<T> implements ValueProvider<T> {
+    private final T value;
+    
+    public ConstantValueProvider(T value) {
+        this.value = value;
+    }
     
     @Override
-    @Nullable
-    public Object getIngredientUnderMouse() {
-        if (!REIRuntime.getInstance().isOverlayVisible()) return null;
-        ScreenOverlay overlay = REIRuntime.getInstance().getOverlay().get();
-        Optional<OverlayListWidget> favoritesList = overlay.getFavoritesList();
-        if (!favoritesList.isPresent()) return null;
-        EntryStack<?> stack = favoritesList.get().getFocusedStack();
-        if (stack.isEmpty()) return null;
-        return stack.jeiValue();
+    public T value() {
+        return value;
+    }
+    
+    @Override
+    public T target() {
+        return value;
+    }
+    
+    @Override
+    public void completeImmediately() {
+    }
+    
+    @Override
+    public void update(double delta) {
     }
 }

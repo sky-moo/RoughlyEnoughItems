@@ -21,32 +21,53 @@
  * SOFTWARE.
  */
 
-package me.shedaniel.rei.jeicompat.wrap;
+package me.shedaniel.rei.api.client.gui.animator;
 
-import lombok.experimental.ExtensionMethod;
-import me.shedaniel.rei.api.client.REIRuntime;
-import me.shedaniel.rei.api.client.overlay.OverlayListWidget;
-import me.shedaniel.rei.api.client.overlay.ScreenOverlay;
-import me.shedaniel.rei.api.common.entry.EntryStack;
-import me.shedaniel.rei.jeicompat.JEIPluginDetector;
-import mezz.jei.api.runtime.IBookmarkOverlay;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Optional;
-
-@ExtensionMethod(JEIPluginDetector.class)
-public enum JEIBookmarkOverlay implements IBookmarkOverlay {
-    INSTANCE;
-    
-    @Override
-    @Nullable
-    public Object getIngredientUnderMouse() {
-        if (!REIRuntime.getInstance().isOverlayVisible()) return null;
-        ScreenOverlay overlay = REIRuntime.getInstance().getOverlay().get();
-        Optional<OverlayListWidget> favoritesList = overlay.getFavoritesList();
-        if (!favoritesList.isPresent()) return null;
-        EntryStack<?> stack = favoritesList.get().getFocusedStack();
-        if (stack.isEmpty()) return null;
-        return stack.jeiValue();
+/**
+ * A value provider is used to provide a value for animation.
+ *
+ * @param <T> the type of the value
+ * @see ValueAnimator
+ */
+@ApiStatus.Experimental
+public interface ValueProvider<T> {
+    /**
+     * Returns a constant value provider, which always returns the same value.
+     *
+     * @param value the value to return
+     * @param <T>   the type of the value
+     * @return the constant value provider
+     */
+    static <T> ValueProvider<T> constant(T value) {
+        return new ConstantValueProvider<>(value);
     }
+    
+    /**
+     * Returns the current value of the provider.
+     *
+     * @return the current value
+     */
+    T value();
+    
+    /**
+     * Returns the target value of the provider.
+     *
+     * @return the target value
+     */
+    T target();
+    
+    /**
+     * Completes the animation immediately.
+     * This will set the current value to the target value.
+     */
+    void completeImmediately();
+    
+    /**
+     * Updates the current value of the provider by the tick delta.
+     *
+     * @param delta the tick delta
+     */
+    void update(double delta);
 }

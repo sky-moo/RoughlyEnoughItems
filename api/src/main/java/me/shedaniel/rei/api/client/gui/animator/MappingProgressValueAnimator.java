@@ -21,32 +21,48 @@
  * SOFTWARE.
  */
 
-package me.shedaniel.rei.jeicompat.wrap;
+package me.shedaniel.rei.api.client.gui.animator;
 
-import lombok.experimental.ExtensionMethod;
-import me.shedaniel.rei.api.client.REIRuntime;
-import me.shedaniel.rei.api.client.overlay.OverlayListWidget;
-import me.shedaniel.rei.api.client.overlay.ScreenOverlay;
-import me.shedaniel.rei.api.common.entry.EntryStack;
-import me.shedaniel.rei.jeicompat.JEIPluginDetector;
-import mezz.jei.api.runtime.IBookmarkOverlay;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Optional;
+import java.util.function.Function;
 
-@ExtensionMethod(JEIPluginDetector.class)
-public enum JEIBookmarkOverlay implements IBookmarkOverlay {
-    INSTANCE;
+@ApiStatus.Internal
+final class MappingProgressValueAnimator<R> implements ProgressValueAnimator<R> {
+    private final ValueAnimator<Double> parent;
+    private final Function<Double, R> converter;
+    private final Function<R, Double> backwardsConverter;
+    
+    MappingProgressValueAnimator(ValueAnimator<Double> parent, Function<Double, R> converter, Function<R, Double> backwardsConverter) {
+        this.parent = parent;
+        this.converter = converter;
+        this.backwardsConverter = backwardsConverter;
+    }
     
     @Override
-    @Nullable
-    public Object getIngredientUnderMouse() {
-        if (!REIRuntime.getInstance().isOverlayVisible()) return null;
-        ScreenOverlay overlay = REIRuntime.getInstance().getOverlay().get();
-        Optional<OverlayListWidget> favoritesList = overlay.getFavoritesList();
-        if (!favoritesList.isPresent()) return null;
-        EntryStack<?> stack = favoritesList.get().getFocusedStack();
-        if (stack.isEmpty()) return null;
-        return stack.jeiValue();
+    public ProgressValueAnimator<R> setTo(R value, long duration) {
+        parent.setTo(backwardsConverter.apply(value), duration);
+        return this;
+    }
+    
+    @Override
+    public R target() {
+        return converter.apply(parent.target());
+    }
+    
+    @Override
+    public R value() {
+        return converter.apply(parent.value());
+    }
+    
+    @Override
+    public void update(double delta) {
+        parent.update(delta);
+    }
+    
+    
+    @Override
+    public double progress() {
+        return parent.value() / 100;
     }
 }

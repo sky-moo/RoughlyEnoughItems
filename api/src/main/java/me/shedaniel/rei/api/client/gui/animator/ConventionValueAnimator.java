@@ -21,32 +21,47 @@
  * SOFTWARE.
  */
 
-package me.shedaniel.rei.jeicompat.wrap;
+package me.shedaniel.rei.api.client.gui.animator;
 
-import lombok.experimental.ExtensionMethod;
-import me.shedaniel.rei.api.client.REIRuntime;
-import me.shedaniel.rei.api.client.overlay.OverlayListWidget;
-import me.shedaniel.rei.api.client.overlay.ScreenOverlay;
-import me.shedaniel.rei.api.common.entry.EntryStack;
-import me.shedaniel.rei.jeicompat.JEIPluginDetector;
-import mezz.jei.api.runtime.IBookmarkOverlay;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Optional;
+import java.util.Objects;
+import java.util.function.Supplier;
 
-@ExtensionMethod(JEIPluginDetector.class)
-public enum JEIBookmarkOverlay implements IBookmarkOverlay {
-    INSTANCE;
+@ApiStatus.Internal
+final class ConventionValueAnimator<T> implements ValueAnimator<T> {
+    private final ValueAnimator<T> parent;
+    private final Supplier<T> convention;
+    private final long duration;
+    
+    ConventionValueAnimator(ValueAnimator<T> parent, Supplier<T> convention, long duration) {
+        this.parent = parent;
+        this.convention = convention;
+        this.duration = duration;
+        setAs(convention.get());
+    }
     
     @Override
-    @Nullable
-    public Object getIngredientUnderMouse() {
-        if (!REIRuntime.getInstance().isOverlayVisible()) return null;
-        ScreenOverlay overlay = REIRuntime.getInstance().getOverlay().get();
-        Optional<OverlayListWidget> favoritesList = overlay.getFavoritesList();
-        if (!favoritesList.isPresent()) return null;
-        EntryStack<?> stack = favoritesList.get().getFocusedStack();
-        if (stack.isEmpty()) return null;
-        return stack.jeiValue();
+    public ValueAnimator<T> setTo(T value, long duration) {
+        return parent.setTo(value, duration);
+    }
+    
+    @Override
+    public T target() {
+        return convention.get();
+    }
+    
+    @Override
+    public T value() {
+        return parent.value();
+    }
+    
+    @Override
+    public void update(double delta) {
+        parent.update(delta);
+        T target = target();
+        if (!Objects.equals(parent.target(), target)) {
+            setTo(target, duration);
+        }
     }
 }

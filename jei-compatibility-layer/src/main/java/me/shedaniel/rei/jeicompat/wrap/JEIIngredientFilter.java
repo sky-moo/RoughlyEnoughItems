@@ -24,17 +24,18 @@
 package me.shedaniel.rei.jeicompat.wrap;
 
 import com.google.common.collect.ImmutableList;
+import lombok.experimental.ExtensionMethod;
 import me.shedaniel.rei.api.client.REIRuntime;
 import me.shedaniel.rei.api.client.config.ConfigObject;
 import me.shedaniel.rei.api.client.config.entry.EntryStackProvider;
 import me.shedaniel.rei.api.common.entry.EntryStack;
+import me.shedaniel.rei.jeicompat.JEIPluginDetector;
 import mezz.jei.api.runtime.IIngredientFilter;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import static me.shedaniel.rei.jeicompat.JEIPluginDetector.unwrap;
-
+@ExtensionMethod(JEIPluginDetector.class)
 public enum JEIIngredientFilter implements IIngredientFilter {
     INSTANCE;
     
@@ -58,7 +59,7 @@ public enum JEIIngredientFilter implements IIngredientFilter {
         for (EntryStackProvider<?> provider : filteredStacks) {
             EntryStack<?> stack = provider.provide();
             if (!stack.isEmpty()) {
-                filtered[i++] = unwrap(stack.cast());
+                filtered[i++] = stack.cast().jeiValue();
             }
         }
         return ImmutableList.copyOf(filtered);

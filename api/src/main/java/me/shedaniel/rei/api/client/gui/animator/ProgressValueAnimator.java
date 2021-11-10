@@ -21,32 +21,26 @@
  * SOFTWARE.
  */
 
-package me.shedaniel.rei.jeicompat.wrap;
+package me.shedaniel.rei.api.client.gui.animator;
 
-import lombok.experimental.ExtensionMethod;
-import me.shedaniel.rei.api.client.REIRuntime;
-import me.shedaniel.rei.api.client.overlay.OverlayListWidget;
-import me.shedaniel.rei.api.client.overlay.ScreenOverlay;
-import me.shedaniel.rei.api.common.entry.EntryStack;
-import me.shedaniel.rei.jeicompat.JEIPluginDetector;
-import mezz.jei.api.runtime.IBookmarkOverlay;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.ApiStatus;
 
-import java.util.Optional;
+import java.util.function.Function;
 
-@ExtensionMethod(JEIPluginDetector.class)
-public enum JEIBookmarkOverlay implements IBookmarkOverlay {
-    INSTANCE;
+@ApiStatus.Experimental
+public interface ProgressValueAnimator<T> extends ValueAnimator<T> {
+    double progress();
     
     @Override
-    @Nullable
-    public Object getIngredientUnderMouse() {
-        if (!REIRuntime.getInstance().isOverlayVisible()) return null;
-        ScreenOverlay overlay = REIRuntime.getInstance().getOverlay().get();
-        Optional<OverlayListWidget> favoritesList = overlay.getFavoritesList();
-        if (!favoritesList.isPresent()) return null;
-        EntryStack<?> stack = favoritesList.get().getFocusedStack();
-        if (stack.isEmpty()) return null;
-        return stack.jeiValue();
+    default ProgressValueAnimator<T> setAs(T value) {
+        ValueAnimator.super.setAs(value);
+        return this;
+    }
+    
+    @Override
+    ProgressValueAnimator<T> setTo(T value, long duration);
+    
+    static <R> ProgressValueAnimator<R> mapProgress(NumberAnimator<?> parent, Function<Double, R> converter, Function<R, Double> backwardsConverter) {
+        return new MappingProgressValueAnimator<>(parent.asDouble(), converter, backwardsConverter);
     }
 }
