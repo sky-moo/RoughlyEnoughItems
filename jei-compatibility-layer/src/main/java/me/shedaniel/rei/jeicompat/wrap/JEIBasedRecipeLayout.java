@@ -29,18 +29,16 @@ import mezz.jei.api.recipe.category.IRecipeCategory;
 import org.jetbrains.annotations.NotNull;
 
 public class JEIBasedRecipeLayout<T> extends JEIRecipeLayout<T> {
-    private final JEIWrappedCategory<T> category;
-    private final JEIWrappedDisplay<T> display;
+    private final IRecipeCategory<?> category;
     
-    public JEIBasedRecipeLayout(JEIWrappedCategory<T> category, JEIWrappedDisplay<T> display, Value<IDrawable> background) {
+    public JEIBasedRecipeLayout(IRecipeCategory<?> category, Value<IDrawable> background) {
         super(background);
         this.category = category;
-        this.display = display;
     }
     
     @Override
     @NotNull
     public IRecipeCategory<?> getRecipeCategory() {
-        return category.getBackingCategory();
+        return category;
     }
 }
