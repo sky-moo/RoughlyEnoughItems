@@ -36,6 +36,7 @@ import me.shedaniel.rei.api.common.category.CategoryIdentifier;
 import me.shedaniel.rei.api.common.entry.EntryIngredient;
 import me.shedaniel.rei.jeicompat.JEIPluginDetector;
 import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -53,7 +54,7 @@ import java.util.List;
 @ExtensionMethod(JEIPluginDetector.class)
 public class JEIWrappedCategory<T> implements DisplayCategory<JEIWrappedDisplay<T>> {
     private final IRecipeCategory<T> backingCategory;
-    private final LazyLoadedValue<IDrawable> background;
+    public final LazyLoadedValue<IDrawable> background;
     private final CategoryIdentifier<? extends JEIWrappedDisplay<T>> identifier;
     
     public JEIWrappedCategory(IRecipeCategory<T> backingCategory) {
@@ -136,18 +137,26 @@ public class JEIWrappedCategory<T> implements DisplayCategory<JEIWrappedDisplay<
     }
     
     public JEIRecipeLayout<T> createLayout(JEIWrappedDisplay<T> display, Value<IDrawable> background) {
-        JEIRecipeLayout<T> layout = new JEIBasedRecipeLayout<>(this, display, background);
-        backingCategory.setRecipe(layout, display.getBackingRecipe(), display.getIngredients());
+        return createLayout(getBackingCategory(), display.getBackingRecipe(), display.getIngredients(), background);
+    }
+    
+    public static <T> JEIRecipeLayout<T> createLayout(IRecipeCategory<T> category, T recipe, IIngredients ingredients, Value<IDrawable> background) {
+        JEIRecipeLayout<T> layout = new JEIBasedRecipeLayout<>(category, background);
+        category.setRecipe(layout, recipe, ingredients);
         return layout;
     }
     
     @Override
     public List<Widget> setupDisplay(JEIWrappedDisplay<T> display, Rectangle bounds) {
+        return setupDisplay(getBackingCategory(), display.getBackingRecipe(), display.getIngredients(), bounds, this.background);
+    }
+    
+    public static <T> List<Widget> setupDisplay(IRecipeCategory<T> category, T recipe, IIngredients ingredients, Rectangle bounds, LazyLoadedValue<IDrawable> backgroundLazy) {
         List<Widget> widgets = new ArrayList<>();
-        IDrawable[] background = {this.background.get()};
+        IDrawable[] background = {backgroundLazy.get()};
         JEIRecipeLayout<T> layout;
         try {
-            layout = createLayout(display, new Value<IDrawable>() {
+            layout = createLayout(category, recipe, ingredients, new Value<IDrawable>() {
                 @Override
                 public void accept(IDrawable iDrawable) {
                     background[0] = iDrawable;
@@ -177,7 +186,7 @@ public class JEIWrappedCategory<T> implements DisplayCategory<JEIWrappedDisplay<
             public void render(PoseStack arg, int mouseX, int mouseY, float f) {
                 arg.pushPose();
                 arg.translate(bounds.x + 4, bounds.y + 4, getZ());
-                backingCategory.draw(display.getBackingRecipe(), arg, mouseX - bounds.x, mouseY - bounds.y);
+                category.draw(recipe, arg, mouseX - bounds.x, mouseY - bounds.y);
                 arg.popPose();
                 
                 Point mouse = new Point(mouseX, mouseY);
@@ -202,7 +211,7 @@ public class JEIWrappedCategory<T> implements DisplayCategory<JEIWrappedDisplay<
             @Override
             @Nullable
             public Tooltip getTooltip(Point mouse) {
-                List<Component> strings = backingCategory.getTooltipStrings(display.getBackingRecipe(), mouse.x - bounds.x - 4, mouse.y - bounds.y - 4);
+                List<Component> strings = category.getTooltipStrings(recipe, mouse.x - bounds.x - 4, mouse.y - bounds.y - 4);
                 if (strings.isEmpty()) {
                     return null;
                 }
@@ -216,7 +225,7 @@ public class JEIWrappedCategory<T> implements DisplayCategory<JEIWrappedDisplay<
             
             @Override
             public boolean mouseClicked(double d, double e, int i) {
-                return backingCategory.handleClick(display.getBackingRecipe(), d - bounds.x - 4, e - bounds.y - 4, i) || super.mouseClicked(d, e, i);
+                return category.handleClick(recipe, d - bounds.x - 4, e - bounds.y - 4, i) || super.mouseClicked(d, e, i);
             }
         });
         layout.addTo(widgets, bounds);
