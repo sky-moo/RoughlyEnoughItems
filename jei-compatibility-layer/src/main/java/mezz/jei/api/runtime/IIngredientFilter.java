@@ -1,7 +1,8 @@
 package mezz.jei.api.runtime;
 
-import com.google.common.collect.ImmutableList;
+import mezz.jei.api.ingredients.IIngredientHelper;
 import mezz.jei.api.ingredients.IIngredientType;
+import org.jetbrains.annotations.ApiStatus;
 
 /**
  * The IIngredientFilter is JEI's filter that can be set by players or controlled by mods.
@@ -24,4 +25,10 @@ public interface IIngredientFilter {
      * To get all the ingredients known to JEI, see {@link IIngredientManager#getAllIngredients(IIngredientType)}.
      */
     ImmutableList<Object> getFilteredIngredients();
+    
+    @ApiStatus.Internal
+    <V> boolean isIngredientVisible(V ingredient);
+    
+    @ApiStatus.Internal
+    <V> boolean isIngredientVisible(V ingredient, IIngredientHelper<V> ingredientHelper);
 }
