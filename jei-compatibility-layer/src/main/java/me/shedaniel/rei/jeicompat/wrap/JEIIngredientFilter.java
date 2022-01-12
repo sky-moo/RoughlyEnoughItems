@@ -32,13 +32,10 @@ import me.shedaniel.rei.api.client.registry.entry.EntryRegistry;
 import me.shedaniel.rei.api.common.entry.EntryStack;
 import me.shedaniel.rei.jeicompat.JEIPluginDetector;
 import mezz.jei.api.ingredients.IIngredientHelper;
-import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.runtime.IIngredientFilter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -80,7 +77,7 @@ public enum JEIIngredientFilter implements IIngredientFilter {
     
     @Override
     public <V> boolean isIngredientVisible(V ingredient, @Nullable IIngredientHelper<V> ingredientHelper) {
-        EntryStack<?> stack = ingredientHelper == null ? ingredient.unwrapStack() : ingredient.unwrapStack(ingredientHelper.getIngredientType().unwrapDefinition());
+        EntryStack<?> stack = ingredient.unwrapStack();
         EntryRegistry registry = EntryRegistry.getInstance();
         if (!registry.alreadyContain(stack)) {
             return false;

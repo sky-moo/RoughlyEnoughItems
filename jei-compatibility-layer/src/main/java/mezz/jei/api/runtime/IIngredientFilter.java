@@ -1,5 +1,6 @@
 package mezz.jei.api.runtime;
 
+import com.google.common.collect.ImmutableList;
 import mezz.jei.api.ingredients.IIngredientHelper;
 import mezz.jei.api.ingredients.IIngredientType;
 import org.jetbrains.annotations.ApiStatus;
