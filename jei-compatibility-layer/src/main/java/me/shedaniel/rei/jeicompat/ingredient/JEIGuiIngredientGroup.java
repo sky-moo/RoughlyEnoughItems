@@ -170,7 +170,7 @@ public class JEIGuiIngredientGroup<T> implements IGuiIngredientGroup<T> {
         @Override
         @Nullable
         public T getDisplayedIngredient() {
-            return slot.getCurrentEntry().<T>cast().jeiValue();
+            return slot.getCurrentEntry().<T>cast().jeiValueOrNull();
         }
         
         @Override
@@ -202,7 +202,7 @@ public class JEIGuiIngredientGroup<T> implements IGuiIngredientGroup<T> {
         
         @Override
         public T get(int index) {
-            return slot.getEntries().get(index).<T>cast().jeiValue();
+            return slot.getEntries().get(index).<T>cast().jeiValueOrNull();
         }
         
         @Override

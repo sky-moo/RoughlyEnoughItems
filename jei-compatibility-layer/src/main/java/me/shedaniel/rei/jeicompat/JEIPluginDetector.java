@@ -209,6 +209,11 @@ public class JEIPluginDetector {
         return value;
     }
     
+    public static <T> T jeiValueOrNull(EntryStack<T> stack) {
+        if (stack.isEmpty()) return null;
+        return jeiValue(stack);
+    }
+    
     public static UidContext wrapContext(ComparisonContext context) {
         return context == ComparisonContext.FUZZY ? UidContext.Recipe : UidContext.Ingredient;
     }
