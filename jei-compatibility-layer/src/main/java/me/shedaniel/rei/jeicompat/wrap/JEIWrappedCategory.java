@@ -28,12 +28,8 @@ import lombok.experimental.ExtensionMethod;
 import dev.architectury.utils.value.Value;
 import me.shedaniel.math.Point;
 import me.shedaniel.math.Rectangle;
-import me.shedaniel.math.impl.PointHelper;
 import me.shedaniel.rei.api.client.gui.Renderer;
-import me.shedaniel.rei.api.client.gui.widgets.Tooltip;
-import me.shedaniel.rei.api.client.gui.widgets.Widget;
-import me.shedaniel.rei.api.client.gui.widgets.WidgetWithBounds;
-import me.shedaniel.rei.api.client.gui.widgets.Widgets;
+import me.shedaniel.rei.api.client.gui.widgets.*;
 import me.shedaniel.rei.api.client.registry.category.CategoryRegistry;
 import me.shedaniel.rei.api.client.registry.display.DisplayCategory;
 import me.shedaniel.rei.api.common.category.CategoryIdentifier;
@@ -178,14 +174,23 @@ public class JEIWrappedCategory<T> implements DisplayCategory<JEIWrappedDisplay<
             }
             
             @Override
-            public void render(PoseStack arg, int i, int j, float f) {
+            public void render(PoseStack arg, int mouseX, int mouseY, float f) {
                 arg.pushPose();
                 arg.translate(bounds.x + 4, bounds.y + 4, getZ());
-                backingCategory.draw(display.getBackingRecipe(), arg, i - bounds.x, j - bounds.y);
+                backingCategory.draw(display.getBackingRecipe(), arg, mouseX - bounds.x, mouseY - bounds.y);
                 arg.popPose();
                 
-                Point mouse = PointHelper.ofMouse();
+                Point mouse = new Point(mouseX, mouseY);
+                
                 if (containsMouse(mouse)) {
+                    for (Slot slot : Widgets.<Slot>walk(widgets, listener -> listener instanceof Slot)) {
+                        if (slot.containsMouse(mouse) && slot.isHighlightEnabled()) {
+                            if (slot.getCurrentTooltip(mouse) != null) {
+                                return;
+                            }
+                        }
+                    }
+                    
                     Tooltip tooltip = getTooltip(mouse);
                     
                     if (tooltip != null) {
@@ -197,7 +202,7 @@ public class JEIWrappedCategory<T> implements DisplayCategory<JEIWrappedDisplay<
             @Override
             @Nullable
             public Tooltip getTooltip(Point mouse) {
-                List<Component> strings = backingCategory.getTooltipStrings(display.getBackingRecipe(), mouse.x - bounds.x, mouse.y - bounds.y);
+                List<Component> strings = backingCategory.getTooltipStrings(display.getBackingRecipe(), mouse.x - bounds.x - 4, mouse.y - bounds.y - 4);
                 if (strings.isEmpty()) {
                     return null;
                 }
@@ -211,7 +216,7 @@ public class JEIWrappedCategory<T> implements DisplayCategory<JEIWrappedDisplay<
             
             @Override
             public boolean mouseClicked(double d, double e, int i) {
-                return backingCategory.handleClick(display.getBackingRecipe(), d - bounds.x, e - bounds.y, i) || super.mouseClicked(d, e, i);
+                return backingCategory.handleClick(display.getBackingRecipe(), d - bounds.x - 4, e - bounds.y - 4, i) || super.mouseClicked(d, e, i);
             }
         });
         layout.addTo(widgets, bounds);
