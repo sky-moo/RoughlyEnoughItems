@@ -118,7 +118,6 @@ public abstract class JEIRecipeLayout<T> implements IRecipeLayout {
     
     @Override
     public void setShapeless() {
-        throw TODO();
     }
     
     public Map<EntryType<?>, IGuiIngredientGroup<?>> getGroups() {
