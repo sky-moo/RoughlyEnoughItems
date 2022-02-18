@@ -53,7 +53,7 @@ public class JEIItemStackRendererImitator implements IIngredientRenderer<ItemSta
     @Override
     public void render(PoseStack stack, int xPosition, int yPosition, @Nullable ItemStack ingredient) {
         if (ingredient == null) return;
-        EntryStacks.of(ingredient).render(stack, new Rectangle(xPosition, yPosition, getWidth(), getHeight()), PointHelper.getMouseX(), PointHelper.getMouseY(), Minecraft.getInstance().getDeltaFrameTime());
+        EntryStacks.of(ingredient).render(stack, new Rectangle(xPosition, yPosition, 16, 16), PointHelper.getMouseX(), PointHelper.getMouseY(), Minecraft.getInstance().getDeltaFrameTime());
     }
     
     @Override

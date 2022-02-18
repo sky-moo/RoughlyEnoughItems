@@ -55,16 +55,6 @@ public class JEIFluidStackRendererImitator implements IIngredientRenderer<FluidS
     }
     
     @Override
-    public int getWidth() {
-        return width;
-    }
-    
-    @Override
-    public int getHeight() {
-        return height;
-    }
-    
-    @Override
     public List<Component> getTooltip(FluidStack ingredient, TooltipFlag tooltipFlag) {
         Tooltip tooltip = EntryStacks.of(FluidStackHooksForge.fromForge(ingredient)).getTooltip(new Point(0, 0));
         if (tooltip == null) return new ArrayList<>();
@@ -74,6 +64,6 @@ public class JEIFluidStackRendererImitator implements IIngredientRenderer<FluidS
     @Override
     public void render(PoseStack stack, int xPosition, int yPosition, @Nullable FluidStack ingredient) {
         if (ingredient == null) return;
-        EntryStacks.of(FluidStackHooksForge.fromForge(ingredient)).render(stack, new Rectangle(xPosition, yPosition, getWidth(), getHeight()), PointHelper.getMouseX(), PointHelper.getMouseY(), Minecraft.getInstance().getDeltaFrameTime());
+        EntryStacks.of(FluidStackHooksForge.fromForge(ingredient)).render(stack, new Rectangle(xPosition, yPosition, width, height), PointHelper.getMouseX(), PointHelper.getMouseY(), Minecraft.getInstance().getDeltaFrameTime());
     }
 }
