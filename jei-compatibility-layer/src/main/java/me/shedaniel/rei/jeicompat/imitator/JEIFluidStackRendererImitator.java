@@ -24,12 +24,11 @@
 package me.shedaniel.rei.jeicompat.imitator;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import dev.architectury.hooks.fluid.forge.FluidStackHooksForge;
+import me.shedaniel.architectury.hooks.forge.FluidStackHooksForge;
 import me.shedaniel.math.Point;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.math.impl.PointHelper;
 import me.shedaniel.rei.api.client.gui.widgets.Tooltip;
-import me.shedaniel.rei.api.common.util.CollectionUtils;
 import me.shedaniel.rei.api.common.util.EntryStacks;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.ingredients.IIngredientRenderer;
@@ -55,25 +54,15 @@ public class JEIFluidStackRendererImitator implements IIngredientRenderer<FluidS
     }
     
     @Override
-    public int getWidth() {
-        return width;
-    }
-    
-    @Override
-    public int getHeight() {
-        return height;
-    }
-    
-    @Override
     public List<Component> getTooltip(FluidStack ingredient, TooltipFlag tooltipFlag) {
         Tooltip tooltip = EntryStacks.of(FluidStackHooksForge.fromForge(ingredient)).getTooltip(new Point(0, 0));
         if (tooltip == null) return new ArrayList<>();
-        return CollectionUtils.filterAndMap(tooltip.entries(), Tooltip.Entry::isText, Tooltip.Entry::getAsText);
+        return tooltip.getText();
     }
     
     @Override
     public void render(PoseStack stack, int xPosition, int yPosition, @Nullable FluidStack ingredient) {
         if (ingredient == null) return;
-        EntryStacks.of(FluidStackHooksForge.fromForge(ingredient)).render(stack, new Rectangle(xPosition, yPosition, getWidth(), getHeight()), PointHelper.getMouseX(), PointHelper.getMouseY(), Minecraft.getInstance().getDeltaFrameTime());
+        EntryStacks.of(FluidStackHooksForge.fromForge(ingredient)).render(stack, new Rectangle(xPosition, yPosition, width, height), PointHelper.getMouseX(), PointHelper.getMouseY(), Minecraft.getInstance().getDeltaFrameTime());
     }
 }

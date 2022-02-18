@@ -28,15 +28,12 @@ import me.shedaniel.math.Point;
 import me.shedaniel.math.Rectangle;
 import me.shedaniel.math.impl.PointHelper;
 import me.shedaniel.rei.api.client.gui.widgets.Tooltip;
-import me.shedaniel.rei.api.common.util.CollectionUtils;
 import me.shedaniel.rei.api.common.util.EntryStacks;
 import mezz.jei.api.ingredients.IIngredientRenderer;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraftforge.client.RenderProperties;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -47,19 +44,12 @@ public class JEIItemStackRendererImitator implements IIngredientRenderer<ItemSta
     public List<Component> getTooltip(ItemStack ingredient, TooltipFlag tooltipFlag) {
         Tooltip tooltip = EntryStacks.of(ingredient).getTooltip(new Point(0, 0));
         if (tooltip == null) return new ArrayList<>();
-        return CollectionUtils.filterAndMap(tooltip.entries(), Tooltip.Entry::isText, Tooltip.Entry::getAsText);
+        return tooltip.getText();
     }
     
     @Override
     public void render(PoseStack stack, int xPosition, int yPosition, @Nullable ItemStack ingredient) {
         if (ingredient == null) return;
-        EntryStacks.of(ingredient).render(stack, new Rectangle(xPosition, yPosition, getWidth(), getHeight()), PointHelper.getMouseX(), PointHelper.getMouseY(), Minecraft.getInstance().getDeltaFrameTime());
-    }
-    
-    @Override
-    public Font getFontRenderer(Minecraft minecraft, ItemStack ingredient) {
-        Font font = RenderProperties.get(ingredient).getFont(ingredient);
-        if (font == null) return minecraft.font;
-        return font;
+        EntryStacks.of(ingredient).render(stack, new Rectangle(xPosition, yPosition, 16, 16), PointHelper.getMouseX(), PointHelper.getMouseY(), Minecraft.getInstance().getDeltaFrameTime());
     }
 }

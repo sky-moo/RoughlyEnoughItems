@@ -25,6 +25,8 @@ package me.shedaniel.rei.jeicompat.wrap;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import lombok.experimental.ExtensionMethod;
+import me.shedaniel.architectury.fluid.FluidStack;
+import me.shedaniel.architectury.hooks.forge.FluidStackHooksForge;
 import me.shedaniel.architectury.utils.EnvExecutor;
 import me.shedaniel.math.Point;
 import me.shedaniel.math.Rectangle;
@@ -157,7 +159,7 @@ public class JEIEntryDefinition<T> implements EntryDefinition<T> {
         public void render(EntryStack<T> entry, PoseStack matrices, Rectangle bounds, int mouseX, int mouseY, float delta) {
             Object value = entry.getValue();
             if (value instanceof FluidStack) value = FluidStackHooksForge.toForge((FluidStack) value);
-            ((IIngredientRenderer<Object>) ingredientRenderer).render(matrices, bounds.getCenterX() - ingredientRenderer.getWidth() / 2, bounds.getCenterY() - ingredientRenderer.getHeight() / 2, value);
+            ((IIngredientRenderer<Object>) ingredientRenderer).render(matrices, bounds.getCenterX() - 16 / 2, bounds.getCenterY() - 16 / 2, value);
         }
         
         @Override
