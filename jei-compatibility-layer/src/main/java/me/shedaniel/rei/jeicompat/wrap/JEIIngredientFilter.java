@@ -82,7 +82,7 @@ public enum JEIIngredientFilter implements IIngredientFilter {
         if (!registry.alreadyContain(stack)) {
             return false;
         }
-        Collection<EntryStack<?>> stacks = registry.refilterNew(Collections.singletonList(stack));
+        Collection<EntryStack<?>> stacks = registry.refilterNew(false, Collections.singletonList(stack));
         return !stacks.isEmpty();
     }
 }
