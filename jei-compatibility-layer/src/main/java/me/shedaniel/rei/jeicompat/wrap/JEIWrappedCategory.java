@@ -185,7 +185,7 @@ public class JEIWrappedCategory<T> implements DisplayCategory<JEIWrappedDisplay<
             @Override
             public void render(PoseStack arg, int mouseX, int mouseY, float f) {
                 arg.pushPose();
-                arg.translate(bounds.x + 4, bounds.y + 4, getZ());
+                arg.translate(bounds.x + 4, bounds.y + 4, 10);
                 category.draw(recipe, arg, mouseX - bounds.x, mouseY - bounds.y);
                 arg.popPose();
                 
