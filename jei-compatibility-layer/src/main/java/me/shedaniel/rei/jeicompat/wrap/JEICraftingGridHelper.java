@@ -88,7 +88,11 @@ public enum JEICraftingGridHelper implements ICraftingGridHelper {
         int width = inputs.size() > 4 ? 3 : 2;
         for (int i = 0; i < inputs.size(); i++) {
             List<T> stacks = inputs.get(i);
-            ingredientGroup.set(DefaultCraftingDisplay.getSlotWithSize(width, i, 3), stacks);
+            int slot = DefaultCraftingDisplay.getSlotWithSize(width, i, 3);
+            ingredientGroup.set(slot + 1, stacks);
+            int x = slot % 3;
+            int y = slot / 3;
+            ingredientGroup.init(slot + 1, true, 13 + 1 + x * 18, 2 + y * 18);
         }
     }
     
@@ -96,7 +100,11 @@ public enum JEICraftingGridHelper implements ICraftingGridHelper {
     public <T> void setInputs(@NotNull IGuiIngredientGroup<T> ingredientGroup, List<List<T>> inputs, int width, int height) {
         for (int i = 0; i < inputs.size(); i++) {
             List<T> stacks = inputs.get(i);
-            ingredientGroup.set(DefaultCraftingDisplay.getSlotWithSize(width, i, 3), stacks);
+            int slot = DefaultCraftingDisplay.getSlotWithSize(width, i, 3);
+            ingredientGroup.set(slot + 1, stacks);
+            int x = slot % 3;
+            int y = slot / 3;
+            ingredientGroup.init(slot + 1, true, 13 + x * 18, 2 + y * 18);
         }
     }
     

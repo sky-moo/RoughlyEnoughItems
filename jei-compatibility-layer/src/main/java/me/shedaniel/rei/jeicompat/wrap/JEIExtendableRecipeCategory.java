@@ -37,11 +37,11 @@ import me.shedaniel.rei.api.client.registry.display.DisplayRegistry;
 import me.shedaniel.rei.api.common.display.Display;
 import me.shedaniel.rei.jeicompat.JEIPluginDetector;
 import me.shedaniel.rei.jeicompat.unwrap.JEIUnwrappedCategory;
-import mezz.jei.api.gui.ingredient.ICraftingGridHelper;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.recipe.category.extensions.IExtendableRecipeCategory;
 import mezz.jei.api.recipe.category.extensions.IRecipeCategoryExtension;
 import mezz.jei.api.recipe.category.extensions.vanilla.crafting.ICraftingCategoryExtension;
+import mezz.jei.api.recipe.category.extensions.vanilla.crafting.ICustomCraftingCategoryExtension;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
@@ -52,7 +52,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class JEIExtendableRecipeCategory<T, D extends Display, W extends IRecipeCategoryExtension> extends JEIUnwrappedCategory<T, D> implements IExtendableRecipeCategory<T, W> {
     private final JEIPluginDetector.JEIPluginWrapper wrapper;
@@ -219,7 +218,17 @@ public class JEIExtendableRecipeCategory<T, D extends Display, W extends IRecipe
             if (builder.isDirty()) {
                 result.setSlots(builder.slots);
                 return result;
+            } else if (category instanceof ICustomCraftingCategoryExtension extension) {
+                JEIRecipeLayout<T> layout = new JEIRecipeLayout<>(builder);
+                layout.getItemStacks().init(0, false, 107, 20);
+                IIngredients ingredients = new JEIIngredients();
+                extension.setIngredients(ingredients);
+                extension.setRecipe(layout, ingredients);
+                JEIDisplaySetup.applyLegacyTooltip(result, layout);
+                result.setSlots(builder.slots);
+                return result;
             }
+            result.setSlots(new ArrayList<>());
             return result;
         }
     }

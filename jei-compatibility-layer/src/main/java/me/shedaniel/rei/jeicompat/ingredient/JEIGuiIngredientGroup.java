@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.experimental.ExtensionMethod;
 import me.shedaniel.rei.api.client.gui.widgets.Slot;
+import me.shedaniel.rei.impl.common.InternalLogger;
 import me.shedaniel.rei.jeicompat.JEIPluginDetector;
 import me.shedaniel.rei.jeicompat.wrap.JEIRecipeLayoutBuilder;
 import me.shedaniel.rei.jeicompat.wrap.JEIRecipeSlot;
@@ -44,8 +45,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-
-import static me.shedaniel.rei.jeicompat.JEIPluginDetector.WILL_NOT_BE_IMPLEMENTED;
 
 @ExtensionMethod(JEIPluginDetector.class)
 public class JEIGuiIngredientGroup<T> implements IGuiIngredientGroup<T> {
@@ -143,7 +142,7 @@ public class JEIGuiIngredientGroup<T> implements IGuiIngredientGroup<T> {
     
     @Override
     public void setOverrideDisplayFocus(@Nullable IFocus<T> focus) {
-        throw WILL_NOT_BE_IMPLEMENTED();
+        InternalLogger.getInstance().error("setOverrideDisplayFocus is not supported in REI yet!");
     }
     
     public class SlotWrapper extends AbstractList<T> implements IGuiIngredient<T> {
