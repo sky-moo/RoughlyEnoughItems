@@ -21,6 +21,7 @@ import me.shedaniel.rei.gui.config.ItemListOrdering;
 import me.shedaniel.rei.impl.ScreenHelper;
 import me.shedaniel.rei.impl.SearchArgument;
 import me.shedaniel.rei.utils.CollectionUtils;
+import me.towdium.pinin.PinIn;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -46,10 +47,11 @@ import java.util.function.Supplier;
 
 @SuppressWarnings({"deprecation", "rawtypes"})
 public class EntryListWidget extends Widget {
-    
+
     private static final Supplier<Boolean> RENDER_EXTRA_CONFIG = () -> RoughlyEnoughItemsCore.getConfigManager().getConfig().doesRenderEntryExtraOverlay();
     private static final String SPACE = " ", EMPTY = "";
     private static final Comparator<EntryStack> ASCENDING_COMPARATOR;
+    private static final PinIn py = new PinIn();
     private static List<Item> searchBlacklisted = Lists.newArrayList();
     private static float scroll;
     private static float target;
@@ -60,11 +62,13 @@ public class EntryListWidget extends Widget {
     private static float scrollBarAlphaFuture = 0;
     private static long scrollBarAlphaFutureTime = -1;
     private static boolean draggingScrollBar = false;
-    
+    private static boolean isZHCN;
+
     static {
         ASCENDING_COMPARATOR = (entry, entry1) -> {
-            if (RoughlyEnoughItemsCore.getConfigManager().getConfig().getItemListOrdering().equals(ItemListOrdering.name))
+            if (RoughlyEnoughItemsCore.getConfigManager().getConfig().getItemListOrdering().equals(ItemListOrdering.name)) {
                 return tryGetEntryStackName(entry).compareToIgnoreCase(tryGetEntryStackName(entry1));
+            }
             if (RoughlyEnoughItemsCore.getConfigManager().getConfig().getItemListOrdering().equals(ItemListOrdering.item_groups)) {
                 if (entry.getType() == EntryStack.Type.ITEM && entry1.getType() == EntryStack.Type.ITEM) {
                     ItemStack stack0 = entry.getItemStack();
@@ -76,13 +80,13 @@ public class EntryListWidget extends Widget {
             return 0;
         };
     }
-    
+
     private final List<SearchArgument[]> lastSearchArgument;
     private List<EntryStack> currentDisplayed;
     private List<Slot> widgets;
     private int width, height, page;
     private Rectangle rectangle, listArea;
-    
+
     public EntryListWidget(int page) {
         this.currentDisplayed = Lists.newArrayList();
         this.width = 0;
@@ -90,51 +94,56 @@ public class EntryListWidget extends Widget {
         this.page = page;
         this.lastSearchArgument = Lists.newArrayList();
     }
-    
+
     public static List<String> tryGetItemStackToolTip(ItemStack itemStack, boolean careAboutAdvanced) {
-        if (!searchBlacklisted.contains(itemStack.getItem()))
+        if (!searchBlacklisted.contains(itemStack.getItem())) {
             try {
                 return CollectionUtils.map(itemStack.getTooltip(MinecraftClient.getInstance().player, MinecraftClient.getInstance().options.advancedItemTooltips && careAboutAdvanced ? TooltipContext.Default.ADVANCED : TooltipContext.Default.NORMAL), Text::asFormattedString);
             } catch (Throwable e) {
                 e.printStackTrace();
                 searchBlacklisted.add(itemStack.getItem());
             }
+        }
         return Collections.singletonList(tryGetItemStackName(itemStack));
     }
-    
+
     @ToBeRemoved
     @Deprecated
     public static String tryGetEntryName(Entry stack) {
-        if (stack.getEntryType() == Entry.Type.ITEM)
+        if (stack.getEntryType() == Entry.Type.ITEM) {
             return tryGetItemStackName(stack.getItemStack());
-        else if (stack.getEntryType() == Entry.Type.FLUID)
+        } else if (stack.getEntryType() == Entry.Type.FLUID) {
             return tryGetFluidName(stack.getFluid());
+        }
         return "";
     }
-    
+
     public static String tryGetEntryStackName(EntryStack stack) {
-        if (stack.getType() == EntryStack.Type.ITEM)
+        if (stack.getType() == EntryStack.Type.ITEM) {
             return tryGetItemStackName(stack.getItemStack());
-        else if (stack.getType() == EntryStack.Type.FLUID)
+        } else if (stack.getType() == EntryStack.Type.FLUID) {
             return tryGetFluidName(stack.getFluid());
+        }
         return "";
     }
-    
+
     public static String tryGetFluidName(Fluid fluid) {
         Identifier id = Registry.FLUID.getId(fluid);
-        if (I18n.hasTranslation("block." + id.toString().replaceFirst(":", ".")))
+        if (I18n.hasTranslation("block." + id.toString().replaceFirst(":", "."))) {
             return I18n.translate("block." + id.toString().replaceFirst(":", "."));
+        }
         return CollectionUtils.mapAndJoinToString(id.getPath().split("_"), StringUtils::capitalize, " ");
     }
-    
+
     public static String tryGetItemStackName(ItemStack stack) {
-        if (!searchBlacklisted.contains(stack.getItem()))
+        if (!searchBlacklisted.contains(stack.getItem())) {
             try {
                 return stack.getName().asFormattedString();
             } catch (Throwable e) {
                 e.printStackTrace();
                 searchBlacklisted.add(stack.getItem());
             }
+        }
         try {
             return I18n.translate("item." + Registry.ITEM.getId(stack.getItem()).toString().replace(":", "."));
         } catch (Throwable e) {
@@ -142,16 +151,18 @@ public class EntryListWidget extends Widget {
         }
         return "ERROR";
     }
-    
+
     public static boolean filterEntry(EntryStack entry, List<SearchArgument[]> arguments) {
-        if (arguments.isEmpty())
+        if (arguments.isEmpty()) {
             return true;
+        }
         AtomicReference<String> mod = new AtomicReference<>(), tooltips = new AtomicReference<>(), name = new AtomicReference<>();
         for (SearchArgument[] arguments1 : arguments) {
             boolean b = true;
             for (SearchArgument argument : arguments1) {
-                if (argument.getArgumentType() == (SearchArgument.ArgumentType.ALWAYS))
+                if (argument.getArgumentType() == (SearchArgument.ArgumentType.ALWAYS)) {
                     return true;
+                }
                 if (argument.getArgumentType() == SearchArgument.ArgumentType.MOD) {
                     fillMod(entry, mod);
                     if (mod.get() != null && !mod.get().isEmpty() && argument.getFunction(!argument.isInclude()).apply(mod.get())) {
@@ -168,77 +179,86 @@ public class EntryListWidget extends Widget {
                 }
                 if (argument.getArgumentType() == SearchArgument.ArgumentType.TEXT) {
                     fillName(entry, name);
-                    if (name.get() != null && !name.get().isEmpty() && argument.getFunction(!argument.isInclude()).apply(name.get())) {
-                        b = false;
+                    if (name.get() != null && !name.get().isEmpty() && (isZHCN ? !py.contains(name.get(), argument.getText()) : argument.getFunction(!argument.isInclude()).apply(name.get()))) {
+                        if (argument.getFunction(!argument.isInclude()).apply(entry.getType() == EntryStack.Type.ITEM ? entry.getItemStack().getItem().toString() : Registry.FLUID.getId(entry.getFluid()).toString().replaceFirst("^.*:", ""))) {
+                            b = false;
+                        }
                         break;
                     }
                 }
             }
-            if (b)
+            if (b) {
                 return true;
+            }
         }
         return false;
     }
-    
+
     private static AtomicReference<String> fillMod(EntryStack entry, AtomicReference<String> mod) {
         if (mod.get() == null) {
             Optional<Identifier> identifier = entry.getIdentifier();
-            if (identifier.isPresent())
+            if (identifier.isPresent()) {
                 mod.set(ClientHelper.getInstance().getModFromIdentifier(identifier.get()).replace(SPACE, EMPTY).toLowerCase(Locale.ROOT));
-            else mod.set("");
+            } else {
+                mod.set("");
+            }
         }
         return mod;
     }
-    
+
     private static AtomicReference<String> fillTooltip(EntryStack entry, AtomicReference<String> mod) {
-        if (mod.get() == null)
-            if (entry.getType() == EntryStack.Type.ITEM)
+        if (mod.get() == null) {
+            if (entry.getType() == EntryStack.Type.ITEM) {
                 mod.set(CollectionUtils.joinToString(tryGetItemStackToolTip(entry.getItemStack(), false), "").replace(SPACE, EMPTY).toLowerCase(Locale.ROOT));
-            else
+            } else {
                 mod.set(tryGetEntryStackName(entry).replace(SPACE, EMPTY).toLowerCase(Locale.ROOT));
+            }
+        }
         return mod;
     }
-    
+
     private static AtomicReference<String> fillName(EntryStack entry, AtomicReference<String> mod) {
-        if (mod.get() == null)
+        if (mod.get() == null) {
             mod.set(tryGetEntryStackName(entry).replace(SPACE, EMPTY).toLowerCase(Locale.ROOT));
+        }
         return mod;
     }
-    
+
     public static float getMaxScroll() {
         return Math.max(maxScroll - ScreenHelper.getLastOverlay().getEntryListWidget().rectangle.height, 0);
     }
-    
+
     public static float getScroll() {
         return scroll;
     }
-    
+
     public static final float clamp(float v) {
         return clamp(v, 300f);
     }
-    
+
     public static final float clamp(float v, float clampExtension) {
         return MathHelper.clamp(v, -clampExtension, getMaxScroll() + clampExtension);
     }
-    
+
     public static void offset(float value, boolean animated) {
         scrollTo(target + value, animated);
     }
-    
+
     public static void scrollTo(float value, boolean animated) {
         scrollTo(value, animated, ClothConfigInitializer.getScrollDuration());
     }
-    
+
     public static void scrollTo(float value, boolean animated, long duration) {
         target = clamp(value);
-        
+
         if (animated) {
             start = System.currentTimeMillis();
             EntryListWidget.duration = duration;
-        } else
+        } else {
             scroll = target;
+        }
     }
-    
+
     private static void updatePosition(float delta) {
         target = clamp(target);
         if (target < 0) {
@@ -246,29 +266,32 @@ public class EntryListWidget extends Widget {
         } else if (target > getMaxScroll()) {
             target = (float) ((target - getMaxScroll()) * (1 - (1 - ClothConfigInitializer.getBounceBackMultiplier()) * delta / 3) + getMaxScroll());
         }
-        if (!Precision.almostEquals(scroll, target, Precision.FLOAT_EPSILON))
+        if (!Precision.almostEquals(scroll, target, Precision.FLOAT_EPSILON)) {
             scroll = (float) Interpolation.expoEase(scroll, target, Math.min((System.currentTimeMillis() - start) / ((double) duration), 1));
-        else
+        } else {
             scroll = target;
+        }
     }
-    
+
     public int getFullTotalSlotsPerPage() {
         return width * height;
     }
-    
+
     @Override
     public boolean mouseScrolled(double double_1, double double_2, double double_3) {
         if (RoughlyEnoughItemsCore.getConfigManager().getConfig().isEntryListWidgetScrolled() && rectangle.contains(double_1, double_2)) {
-            if (scrollBarAlphaFuture == 0)
+            if (scrollBarAlphaFuture == 0) {
                 scrollBarAlphaFuture = 1f;
-            if (System.currentTimeMillis() - scrollBarAlphaFutureTime > 300f)
+            }
+            if (System.currentTimeMillis() - scrollBarAlphaFutureTime > 300f) {
                 scrollBarAlphaFutureTime = System.currentTimeMillis();
+            }
             offset((float) (ClothConfigInitializer.getScrollStep() * -double_3), true);
             return true;
         }
         return super.mouseScrolled(double_1, double_2, double_3);
     }
-    
+
     @Override
     public void render(int int_1, int int_2, float float_1) {
         if (RoughlyEnoughItemsCore.getConfigManager().getConfig().doesVillagerScreenHavePermanentScrollBar()) {
@@ -284,22 +307,24 @@ public class EntryListWidget extends Widget {
                 } else if (l > 2000f && scrollBarAlphaFuture == 1) {
                     scrollBarAlphaFuture = 0;
                     scrollBarAlphaFutureTime = System.currentTimeMillis();
-                } else
+                } else {
                     scrollBarAlpha = scrollBarAlphaFuture;
+                }
             } else {
-                if (scrollBarAlphaFuture == 0)
+                if (scrollBarAlphaFuture == 0) {
                     scrollBarAlpha = Math.min(scrollBarAlpha, 1 - Math.min(1f, l / 300f));
-                else if (scrollBarAlphaFuture == 1)
+                } else if (scrollBarAlphaFuture == 1) {
                     scrollBarAlpha = Math.max(Math.min(1f, l / 300f), scrollBarAlpha);
+                }
             }
         }
-        
+
         GuiLighting.disable();
         RenderHelper.pushMatrix();
         boolean widgetScrolled = RoughlyEnoughItemsCore.getConfigManager().getConfig().isEntryListWidgetScrolled();
-        if (!widgetScrolled)
+        if (!widgetScrolled) {
             scroll = 0;
-        else {
+        } else {
             updatePosition(float_1);
             page = 0;
             ScreenHelper.getLastOverlay().setPage(0);
@@ -308,8 +333,9 @@ public class EntryListWidget extends Widget {
         widgets.forEach(widget -> {
             if (widgetScrolled) {
                 widget.getBounds().y = (int) (widget.backupY - scroll);
-                if (widget.getBounds().y <= rectangle.y + rectangle.height && widget.getBounds().getMaxY() >= rectangle.y)
+                if (widget.getBounds().y <= rectangle.y + rectangle.height && widget.getBounds().getMaxY() >= rectangle.y) {
                     widget.render(int_1, int_2, float_1);
+                }
             } else {
                 widget.render(int_1, int_2, float_1);
             }
@@ -347,17 +373,20 @@ public class EntryListWidget extends Widget {
         }
         RenderHelper.popMatrix();
         ClientPlayerEntity player = minecraft.player;
-        if (rectangle.contains(PointHelper.fromMouse()) && ClientHelper.getInstance().isCheating() && !player.inventory.getCursorStack().isEmpty() && RoughlyEnoughItemsCore.hasPermissionToUsePackets())
+        if (rectangle.contains(PointHelper.fromMouse()) && ClientHelper.getInstance().isCheating() && !player.inventory.getCursorStack().isEmpty() && RoughlyEnoughItemsCore.hasPermissionToUsePackets()) {
             ScreenHelper.getLastOverlay().addTooltip(QueuedTooltip.create(I18n.translate("text.rei.delete_items")));
+        }
     }
-    
+
     public void updateList(DisplayHelper.DisplayBoundsHandler<?> boundsHandler, Rectangle rectangle, int page, String searchTerm, boolean processSearchTerm) {
         this.rectangle = rectangle;
         this.page = page;
         this.widgets = Lists.newCopyOnWriteArrayList();
         calculateListSize(rectangle);
-        if (currentDisplayed.isEmpty() || processSearchTerm)
+        if (currentDisplayed.isEmpty() || processSearchTerm) {
+            isZHCN = "zh_cn".equals(MinecraftClient.getInstance().options.language);
             currentDisplayed = processSearchTerm(searchTerm, RoughlyEnoughItemsCore.getEntryRegistry().getStacksList(), new ArrayList<>(ScreenHelper.inventoryStacks));
+        }
         int startX = rectangle.getCenterX() - width * 9;
         int startY = rectangle.getCenterY() - height * 9;
         this.listArea = new Rectangle(startX, startY, width * 18, height * 18);
@@ -371,50 +400,59 @@ public class EntryListWidget extends Widget {
         for (int yy = 0; yy < height; yy++) {
             for (int xx = 0; xx < width; xx++) {
                 int x = startX + xx * 18, y = startY + yy * 18;
-                if (!canBeFit(x, y, listArea))
+                if (!canBeFit(x, y, listArea)) {
                     continue;
+                }
                 j++;
-                if (j > currentDisplayed.size())
+                if (j > currentDisplayed.size()) {
                     break;
+                }
                 final EntryStack stack = currentDisplayed.get(j - 1).copy()
                         .setting(EntryStack.Settings.RENDER_COUNTS, EntryStack.Settings.FALSE)
                         .setting(EntryStack.Settings.Item.RENDER_OVERLAY, RENDER_EXTRA_CONFIG);
                 maxScroll = y + 18;
                 widgets.add((Slot) new Slot(xx, yy, x, y).entry(stack).noBackground());
             }
-            if (j > currentDisplayed.size())
+            if (j > currentDisplayed.size()) {
                 break;
+            }
         }
         EntryListWidget.maxScroll = Math.max(maxScroll - 18, 0);
     }
-    
+
     public int getTotalPage() {
-        if (RoughlyEnoughItemsCore.getConfigManager().getConfig().isEntryListWidgetScrolled())
+        if (RoughlyEnoughItemsCore.getConfigManager().getConfig().isEntryListWidgetScrolled()) {
             return 1;
+        }
         int fitSlotsPerPage = getTotalFitSlotsPerPage(listArea.x, listArea.y, listArea);
-        if (fitSlotsPerPage > 0)
+        if (fitSlotsPerPage > 0) {
             return MathHelper.ceil(getCurrentDisplayed().size() / fitSlotsPerPage);
+        }
         return 0;
     }
-    
+
     public int getTotalFitSlotsPerPage(int startX, int startY, Rectangle listArea) {
         int slots = 0;
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
-                if (canBeFit(startX + x * 18, startY + y * 18, listArea))
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (canBeFit(startX + x * 18, startY + y * 18, listArea)) {
                     slots++;
+                }
+            }
+        }
         return slots;
     }
-    
+
     public boolean canBeFit(int left, int top, Rectangle listArea) {
         for (DisplayHelper.DisplayBoundsHandler sortedBoundsHandler : RoughlyEnoughItemsCore.getDisplayHelper().getSortedBoundsHandlers(minecraft.currentScreen.getClass())) {
             ActionResult fit = sortedBoundsHandler.canItemSlotWidgetFit(!RoughlyEnoughItemsCore.getConfigManager().getConfig().isLeftHandSidePanel(), left, top, minecraft.currentScreen, listArea);
-            if (fit != ActionResult.PASS)
+            if (fit != ActionResult.PASS) {
                 return fit == ActionResult.SUCCESS;
+            }
         }
         return true;
     }
-    
+
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int int_1, double double_3, double double_4) {
         if (int_1 == 0 && scrollBarAlpha > 0 && draggingScrollBar) {
@@ -432,92 +470,105 @@ public class EntryListWidget extends Widget {
         }
         return super.mouseDragged(mouseX, mouseY, int_1, double_3, double_4);
     }
-    
+
     @Override
     public boolean keyPressed(int int_1, int int_2, int int_3) {
-        if (rectangle.contains(PointHelper.fromMouse()))
-            for (Widget widget : widgets)
-                if (widget.keyPressed(int_1, int_2, int_3))
+        if (rectangle.contains(PointHelper.fromMouse())) {
+            for (Widget widget : widgets) {
+                if (widget.keyPressed(int_1, int_2, int_3)) {
                     return true;
+                }
+            }
+        }
         return false;
     }
-    
+
     public List getCurrentDisplayed() {
         return currentDisplayed;
     }
-    
+
     private List<EntryStack> processSearchTerm(String searchTerm, List<EntryStack> ol, List<ItemStack> inventoryItems) {
         lastSearchArgument.clear();
         List<EntryStack> os = new LinkedList<>(ol);
-        if (RoughlyEnoughItemsCore.getConfigManager().getConfig().getItemListOrdering() != ItemListOrdering.registry)
+        if (RoughlyEnoughItemsCore.getConfigManager().getConfig().getItemListOrdering() != ItemListOrdering.registry) {
             os.sort(ASCENDING_COMPARATOR);
-        if (!RoughlyEnoughItemsCore.getConfigManager().getConfig().isItemListAscending())
+        }
+        if (!RoughlyEnoughItemsCore.getConfigManager().getConfig().isItemListAscending()) {
             Collections.reverse(os);
+        }
         String[] splitSearchTerm = StringUtils.splitByWholeSeparatorPreserveAllTokens(searchTerm, "|");
         for (String s : splitSearchTerm) {
             String[] split = StringUtils.split(s);
             SearchArgument[] arguments = new SearchArgument[split.length];
             for (int i = 0; i < split.length; i++) {
                 String s1 = split[i];
-                if (s1.startsWith("@-") || s1.startsWith("-@"))
+                if (s1.startsWith("@-") || s1.startsWith("-@")) {
                     arguments[i] = new SearchArgument(SearchArgument.ArgumentType.MOD, s1.substring(2), false);
-                else if (s1.startsWith("@"))
+                } else if (s1.startsWith("@")) {
                     arguments[i] = new SearchArgument(SearchArgument.ArgumentType.MOD, s1.substring(1), true);
-                else if (s1.startsWith("#-") || s1.startsWith("-#"))
+                } else if (s1.startsWith("#-") || s1.startsWith("-#")) {
                     arguments[i] = new SearchArgument(SearchArgument.ArgumentType.TOOLTIP, s1.substring(2), false);
-                else if (s1.startsWith("#"))
+                } else if (s1.startsWith("#")) {
                     arguments[i] = new SearchArgument(SearchArgument.ArgumentType.TOOLTIP, s1.substring(1), true);
-                else if (s1.startsWith("-"))
+                } else if (s1.startsWith("-")) {
                     arguments[i] = new SearchArgument(SearchArgument.ArgumentType.TEXT, s1.substring(1), false);
-                else
+                } else {
                     arguments[i] = new SearchArgument(SearchArgument.ArgumentType.TEXT, s1, true);
+                }
             }
-            if (arguments.length > 0)
+            if (arguments.length > 0) {
                 lastSearchArgument.add(arguments);
-            else
+            } else {
                 lastSearchArgument.add(new SearchArgument[]{SearchArgument.ALWAYS});
+            }
         }
         List<EntryStack> stacks = Collections.emptyList();
-        if (lastSearchArgument.isEmpty())
+        if (lastSearchArgument.isEmpty()) {
             stacks = os;
-        else
+        } else {
             stacks = CollectionUtils.filter(os, entry -> filterEntry(entry, lastSearchArgument));
-        if (!RoughlyEnoughItemsCore.getConfigManager().isCraftableOnlyEnabled() || stacks.isEmpty() || inventoryItems.isEmpty())
+        }
+        if (!RoughlyEnoughItemsCore.getConfigManager().isCraftableOnlyEnabled() || stacks.isEmpty() || inventoryItems.isEmpty()) {
             return Collections.unmodifiableList(stacks);
+        }
         List<EntryStack> workingItems = RecipeHelper.getInstance().findCraftableEntriesByItems(inventoryItems);
         List<EntryStack> newList = Lists.newLinkedList();
         for (EntryStack workingItem : workingItems) {
             EntryStack any = CollectionUtils.findFirstOrNullEquals(stacks, workingItem);
-            if (any != null)
+            if (any != null) {
                 newList.add(any);
+            }
         }
-        if (newList.isEmpty())
+        if (newList.isEmpty()) {
             return Collections.unmodifiableList(stacks);
+        }
         return Collections.unmodifiableList(newList);
     }
-    
+
     public List<SearchArgument[]> getLastSearchArgument() {
         return lastSearchArgument;
     }
-    
+
     public void calculateListSize(Rectangle rect) {
         int xOffset = 0, yOffset = 0;
         width = 0;
         height = 0;
         while (true) {
             xOffset += 18;
-            if (height == 0)
+            if (height == 0) {
                 width++;
+            }
             if (xOffset + 19 > rect.width) {
                 xOffset = 0;
                 yOffset += 18;
                 height++;
             }
-            if (yOffset + 19 > rect.height)
+            if (yOffset + 19 > rect.height) {
                 break;
+            }
         }
     }
-    
+
     @Override
     public boolean mouseClicked(double double_1, double double_2, int int_1) {
         double height = getMaxScroll();
@@ -531,75 +582,81 @@ public class EntryListWidget extends Widget {
             }
         }
         this.draggingScrollBar = false;
-        
+
         if (rectangle.contains(double_1, double_2)) {
             ClientPlayerEntity player = minecraft.player;
             if (ClientHelper.getInstance().isCheating() && !player.inventory.getCursorStack().isEmpty() && RoughlyEnoughItemsCore.hasPermissionToUsePackets()) {
                 ClientHelper.getInstance().sendDeletePacket();
                 return true;
             }
-            if (!player.inventory.getCursorStack().isEmpty() && RoughlyEnoughItemsCore.hasPermissionToUsePackets())
+            if (!player.inventory.getCursorStack().isEmpty() && RoughlyEnoughItemsCore.hasPermissionToUsePackets()) {
                 return false;
-            for (Widget widget : children())
-                if (widget.mouseClicked(double_1, double_2, int_1))
+            }
+            for (Widget widget : children()) {
+                if (widget.mouseClicked(double_1, double_2, int_1)) {
                     return true;
+                }
+            }
         }
         return false;
     }
-    
+
     @Override
     public List<Slot> children() {
         return widgets;
     }
-    
+
     private class Slot extends EntryWidget {
         private final int backupY;
         private int xx, yy;
-        
+
         public Slot(int xx, int yy, int x, int y) {
             super(x, y);
             this.xx = xx;
             this.yy = yy;
             this.backupY = y;
         }
-        
+
         public int getBackupY() {
             return backupY;
         }
-        
+
         public int getXx() {
             return xx;
         }
-        
+
         public int getYy() {
             return yy;
         }
-        
+
         @Override
         public boolean containsMouse(double mouseX, double mouseY) {
             return super.containsMouse(mouseX, mouseY) && rectangle.contains(mouseX, mouseY);
         }
-        
+
         @Override
         protected void queueTooltip(int mouseX, int mouseY, float delta) {
             ClientPlayerEntity player = minecraft.player;
-            if (!ClientHelper.getInstance().isCheating() || player.inventory.getCursorStack().isEmpty())
+            if (!ClientHelper.getInstance().isCheating() || player.inventory.getCursorStack().isEmpty()) {
                 super.queueTooltip(mouseX, mouseY, delta);
+            }
         }
-        
+
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (!interactable)
+            if (!interactable) {
                 return super.mouseClicked(mouseX, mouseY, button);
+            }
             if (containsMouse(mouseX, mouseY) && ClientHelper.getInstance().isCheating()) {
                 EntryStack entry = getCurrentEntry().copy();
                 if (entry.getType() == EntryStack.Type.ITEM) {
-                    if (RoughlyEnoughItemsCore.getConfigManager().getConfig().getItemCheatingMode() == ItemCheatingMode.REI_LIKE)
+                    if (RoughlyEnoughItemsCore.getConfigManager().getConfig().getItemCheatingMode() == ItemCheatingMode.REI_LIKE) {
                         entry.setAmount(button != 1 ? 1 : entry.getItemStack().getMaxCount());
-                    else if (RoughlyEnoughItemsCore.getConfigManager().getConfig().getItemCheatingMode() == ItemCheatingMode.JEI_LIKE)
+                    } else if (RoughlyEnoughItemsCore.getConfigManager().getConfig().getItemCheatingMode() == ItemCheatingMode.JEI_LIKE) {
                         entry.setAmount(button != 0 ? 1 : entry.getItemStack().getMaxCount());
-                    else
+                    } else {
                         entry.setAmount(1);
+                    }
                 }
                 ClientHelper.getInstance().tryCheatingEntry(entry);
                 return true;
@@ -607,5 +664,5 @@ public class EntryListWidget extends Widget {
             return super.mouseClicked(mouseX, mouseY, button);
         }
     }
-    
+
 }

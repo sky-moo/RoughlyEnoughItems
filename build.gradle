@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.4-SNAPSHOT'
+    id 'fabric-loom' version '0.7-SNAPSHOT'
     id 'maven-publish'
     id 'net.minecrell.licenser' version '0.4.1'
 }
@@ -27,6 +27,16 @@ processResources {
         expand 'version': project.version
     }
     inputs.property "version", project.version
+}
+
+repositories {
+    jcenter()
+    maven {
+        url 'https://maven.terraformersmc.com/releases'
+    }
+    maven {
+        url 'https://jitpack.io'
+    }
 }
 
 dependencies {
@@ -61,6 +71,7 @@ dependencies {
     compile "org.lwjgl:lwjgl-jemalloc:3.2.1"
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"
     implementation 'org.jetbrains:annotations:15.0'
+    implementation 'com.github.Towdium:PinIn:1.5.0'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
